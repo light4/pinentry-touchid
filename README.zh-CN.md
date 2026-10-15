@@ -11,33 +11,29 @@ macOS 原生 GnuPG pinentry，使用 Swift、AppKit、LocalAuthentication 和 Se
 
 ## 快速开始
 
-需要 macOS 13+、Swift 6+ / Xcode Command Line Tools，以及另行安装的 GnuPG。
-Touch ID 需要兼容硬件及已登记的指纹；程序需要本机图形会话，不支持无头 SSH 终端回退。
+使用 **Homebrew** 安装：
 
 ```sh
-swift build -c release
-.build/release/pinentry-touchid --check
-mkdir -p ~/bin
-install -m 755 .build/release/pinentry-touchid ~/bin/pinentry-touchid
+brew tap light4/pinentry-touchid https://github.com/light4/pinentry-touchid
+brew install light4/pinentry-touchid/pinentry-touchid
 ```
 
-在 `~/.gnupg/gpg-agent.conf` 中添加或替换以下配置，改为自己的完整绝对路径：
-
-```conf
-pinentry-program /Users/YOUR_USERNAME/bin/pinentry-touchid
-```
+或使用 **Nix**：
 
 ```sh
-gpg-connect-agent reloadagent /bye
+nix profile add github:light4/pinentry-touchid
 ```
 
-构建不会自动安装或修改 GPG 配置。首次输入密码时勾选 **Save in Keychain for Touch ID**，才能在后续使用指纹解锁；这要求 GPG 允许外部缓存并提供 `SETKEYINFO`。gpg-agent 自身缓存有效期间不会触发指纹验证。
+macOS / 工具链要求、源码构建及安装后必需的 GPG 配置见[使用指南](docs/usage.zh-CN.md)。
+两种安装方式都不会改动 GPG 配置。GnuPG 需另行安装，程序需要本地图形会话。
+
+首次输入密码时勾选 **Save in Keychain for Touch ID**，才能在后续使用指纹解锁；这要求 GPG 允许外部缓存并提供 `SETKEYINFO`。gpg-agent 自身缓存有效期间不会触发指纹验证。
 
 **安全提示：** Touch ID 验证在应用层执行，Keychain 条目没有生物识别 ACL；私钥仍由 GnuPG 管理，不在 Secure Enclave 中。本项目尚未完成安全审计。
 
 ## 文档
 
-- [使用指南](docs/usage.zh-CN.md)：构建、GPG 配置、首次签名、指纹验证与缓存清理。
+- [使用指南](docs/usage.zh-CN.md)：Homebrew / Nix 安装、源码构建、GPG 配置、指纹验证与缓存清理。
 - [安全边界](docs/security.zh-CN.md)：Keychain 保护、内存限制与代码签名。
 - [协议支持与限制](docs/protocol.zh-CN.md)：Assuan 命令、兼容性及验证状态。
 - [开发指南](docs/development.zh-CN.md)：prek hooks 与黑盒 E2E 测试。

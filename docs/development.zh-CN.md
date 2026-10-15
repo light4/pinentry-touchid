@@ -30,6 +30,31 @@ ruff format scripts/e2e.py
 
 不添加单元测试、测试框架依赖或 CI。
 
+## 打包
+
+`flake.nix` / `nix/package.nix` 构建 macOS 原生可执行文件，
+并在 derivation 的检查阶段运行现有非 GUI E2E 脚本。
+构建输入仅包含 Swift 源文件和该脚本，不包含本地构建产物。
+
+```sh
+nix flake check
+nixfmt --check flake.nix nix/package.nix
+brew style Formula/pinentry-touchid.rb
+```
+
+`Formula/pinentry-touchid.rb` 锁定不可变源码压缩包及校验值，
+`head` 跟踪 `main`。发布源码变更时，需一起更新压缩包 revision、版本和校验值。
+当前快照使用 commit `27abc8fc6817a2549f008eec0d3cfd351e9c6355`，不依赖 release tag。
+
+按[安装指南](usage.zh-CN.md#homebrew)安装 Formula 后，运行其 CLI / 协议冒烟测试：
+
+```sh
+brew test light4/pinentry-touchid/pinentry-touchid
+```
+
+Formula 测试运行已安装的真实可执行文件，不是单元测试。
+包安装和测试都不会修改 GPG 配置。
+
 ## 黑盒 E2E 测试
 
 `scripts/e2e.py` 仅使用 Python 标准库，以子进程运行真实可执行文件，

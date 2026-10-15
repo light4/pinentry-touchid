@@ -31,6 +31,32 @@ ruff format scripts/e2e.py
 
 No unit tests, test framework dependencies, or CI are added.
 
+## Packaging
+
+`flake.nix` / `nix/package.nix` build a native macOS executable and run the
+existing non-GUI E2E script as the derivation's check phase. Build inputs are
+limited to the Swift sources and that script, excluding local build artifacts.
+
+```sh
+nix flake check
+nixfmt --check flake.nix nix/package.nix
+brew style Formula/pinentry-touchid.rb
+```
+
+`Formula/pinentry-touchid.rb` pins an immutable source archive and checksum;
+its `head` tracks `main`. When releasing source changes, update the archive
+revision, version, and checksum together. The snapshot currently uses commit
+`27abc8fc6817a2549f008eec0d3cfd351e9c6355`; it does not depend on a release tag.
+
+After [installing the formula](usage.md#homebrew), run its CLI/protocol smoke test:
+
+```sh
+brew test light4/pinentry-touchid/pinentry-touchid
+```
+
+The formula test runs the installed executable, not unit tests. Package
+installation and tests do not change GPG configuration.
+
 ## Black-box E2E tests
 
 `scripts/e2e.py` uses only the Python standard library and runs the real executable

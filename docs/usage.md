@@ -2,6 +2,73 @@
 
 English | [简体中文](usage.zh-CN.md)
 
+## Install
+
+GnuPG must be installed separately. Touch ID requires compatible hardware and
+enrolled fingerprints; the app needs a local macOS graphical session.
+
+### Homebrew
+
+This repository doubles as a tap. Specify its URL explicitly because it is not
+named `homebrew-pinentry-touchid`:
+
+```sh
+brew tap light4/pinentry-touchid https://github.com/light4/pinentry-touchid
+brew install light4/pinentry-touchid/pinentry-touchid
+pinentry-touchid --check
+```
+
+The formula builds from a SHA-256-verified, immutable source snapshot of version
+0.1.0. It requires macOS 13+ and Swift 6+: on macOS 15+ it uses the Swift toolchain
+from Xcode / Command Line Tools; on older macOS it depends on Homebrew's Swift.
+The selected toolchain and any build dependencies must support your macOS version.
+There are no prebuilt bottles.
+
+To build the latest source instead:
+
+```sh
+brew install --HEAD light4/pinentry-touchid/pinentry-touchid
+```
+
+To print the stable executable path for GPG configuration:
+
+```sh
+printf '%s/bin/pinentry-touchid\n' "$(brew --prefix pinentry-touchid)"
+```
+
+### Nix
+
+Enable the `nix-command` and `flakes` experimental features in your Nix installation.
+
+```sh
+nix profile add github:light4/pinentry-touchid
+pinentry-touchid --check
+```
+
+The flake exposes `packages.<system>.pinentry-touchid` and `default` for
+`aarch64-darwin` and `x86_64-darwin`. The pinned nixpkgs currently requires
+macOS 14+. Linux is not supported.
+
+To build or run from a checkout without installing into your profile:
+
+```sh
+nix build .
+./result/bin/pinentry-touchid --check
+nix run . -- --version
+nix flake check
+```
+
+Nix uses its own compiler and SDK, not the host's Xcode installation. Because
+the package has no third-party dependencies, the derivation compiles the Swift
+sources directly with nixpkgs' Swift 5.10, without evaluating the Swift 6 SwiftPM
+manifest. The build runs the non-GUI E2E checks against the resulting binary.
+`flake.lock` pins the toolchain and dependencies.
+
+For GPG, use a stable absolute path in your profile (usually
+`/Users/YOUR_USERNAME/.nix-profile/bin/pinentry-touchid`) or your nix-darwin /
+Home Manager managed path. Do not point GPG at a temporary `result` symlink or
+hard-code a version-specific `/nix/store/…` path.
+
 ## Requirements and build
 
 - macOS 13+; fingerprint authentication requires available Touch ID hardware and enrolled fingerprints.
@@ -21,7 +88,9 @@ The executable is built at `.build/release/pinentry-touchid`.
 
 ## Configure GPG
 
-**Building does not install the program or modify GPG configuration.** You can manually copy it to a stable location:
+**Neither building nor package installation modifies GPG configuration.**
+If you built from source, manually copy the binary to a stable location (skip
+this step for Homebrew / Nix):
 
 ```sh
 mkdir -p ~/bin
@@ -33,6 +102,9 @@ Set `pinentry-program` in `~/.gnupg/gpg-agent.conf`, replacing any existing sett
 ```conf
 pinentry-program /Users/YOUR_USERNAME/bin/pinentry-touchid
 ```
+
+For Homebrew or Nix, replace the example with the stable package path described
+above; do not copy the binary to `~/bin` unless you intend to manage updates manually.
 
 Then reload the agent:
 

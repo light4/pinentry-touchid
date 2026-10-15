@@ -2,6 +2,70 @@
 
 [English](usage.md) | 简体中文
 
+## 安装
+
+GnuPG 需另行安装。Touch ID 需要兼容硬件及已登记的指纹，程序需要 macOS 本地图形会话。
+
+### Homebrew
+
+本仓库同时作为 tap 使用。由于仓库名不是 `homebrew-pinentry-touchid`，
+添加 tap 时需要显式指定 URL：
+
+```sh
+brew tap light4/pinentry-touchid https://github.com/light4/pinentry-touchid
+brew install light4/pinentry-touchid/pinentry-touchid
+pinentry-touchid --check
+```
+
+Formula 从经过 SHA-256 校验的 0.1.0 不可变源码快照构建。
+要求 macOS 13+ 和 Swift 6+：macOS 15+ 使用 Xcode / Command Line Tools 的 Swift；
+更早的 macOS 则依赖 Homebrew 的 Swift。
+所选工具链及构建依赖也必须支持当前 macOS 版本。暂不提供预构建 bottle。
+
+如需构建最新源码：
+
+```sh
+brew install --HEAD light4/pinentry-touchid/pinentry-touchid
+```
+
+打印用于 GPG 配置的稳定可执行文件路径：
+
+```sh
+printf '%s/bin/pinentry-touchid\n' "$(brew --prefix pinentry-touchid)"
+```
+
+### Nix
+
+Nix 需启用 `nix-command` 与 `flakes` 实验特性。
+
+```sh
+nix profile add github:light4/pinentry-touchid
+pinentry-touchid --check
+```
+
+Flake 为 `aarch64-darwin` 和 `x86_64-darwin` 提供
+`packages.<system>.pinentry-touchid` 及 `default`。
+锁定的 nixpkgs 当前要求 macOS 14+，不支持 Linux。
+
+在工作副本中构建或运行，不安装到 profile：
+
+```sh
+nix build .
+./result/bin/pinentry-touchid --check
+nix run . -- --version
+nix flake check
+```
+
+Nix 使用自己的编译器和 SDK，不依赖本机 Xcode。项目没有第三方依赖，
+因此 derivation 使用 nixpkgs 的 Swift 5.10 直接编译 Swift 源文件，
+不解析 Swift 6 的 SwiftPM manifest；构建时会对产物运行非 GUI E2E 检查。
+`flake.lock` 锁定工具链和依赖。
+
+GPG 应使用 profile 中稳定的绝对路径，通常为
+`/Users/YOUR_USERNAME/.nix-profile/bin/pinentry-touchid`，
+或 nix-darwin / Home Manager 管理的路径。
+不要指向临时 `result` 软链接，也不要写死带版本的 `/nix/store/…` 路径。
+
 ## 要求与构建
 
 - macOS 13+；指纹功能需要可用的 Touch ID 硬件及已登记的指纹。
@@ -21,7 +85,8 @@ swift build -c release
 
 ## 配置 GPG
 
-**构建不会自动安装，也不会改动 GPG 配置。** 可手动复制到固定位置：
+**构建和包管理器安装都不会改动 GPG 配置。**
+源码构建后可手动复制到固定位置（Homebrew / Nix 安装跳过此步）：
 
 ```sh
 mkdir -p ~/bin
@@ -33,6 +98,9 @@ install -m 755 .build/release/pinentry-touchid ~/bin/pinentry-touchid
 ```conf
 pinentry-program /Users/YOUR_USERNAME/bin/pinentry-touchid
 ```
+
+Homebrew / Nix 安装请将示例替换为上文的稳定包路径；
+除非准备自行管理更新，否则不要额外复制到 `~/bin`。
 
 然后重新加载 agent：
 
