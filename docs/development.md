@@ -14,6 +14,11 @@ prek install
 prek run --all-files
 ```
 
+Hooks are configured in the native `prek.toml` file, which prek discovers automatically.
+Basic file checks use prek's native `repo: builtin`; no external hook repository is fetched.
+The remaining hooks run locally installed tools. This configuration requires prek,
+not the Python `pre-commit` runner.
+
 `prek install` installs this checkout's pre-commit hook. Each commit checks for large
 files, merge conflicts, YAML errors, trailing whitespace, and missing final newlines;
 runs Swift and Python lint/format checks; and builds the release binary for E2E tests.

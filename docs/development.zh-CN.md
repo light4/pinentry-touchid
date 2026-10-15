@@ -14,6 +14,10 @@ prek install
 prek run --all-files
 ```
 
+Hooks 配置使用原生的 `prek.toml` 文件，prek 会自动发现，无需额外指定路径。
+基础文件检查使用 prek 原生的 `repo: builtin`，不拉取外部 hook 仓库；
+其余 hooks 调用本机已安装的工具。该配置需要 prek，不适用于 Python `pre-commit`。
+
 `prek install` 为当前工作副本安装 pre-commit hook。每次提交会检查大文件、
 合并冲突、YAML 错误、行尾空白及文件末尾换行，运行 Swift / Python lint 与格式检查，
 并构建 release 二进制执行 E2E 测试。
