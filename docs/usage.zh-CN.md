@@ -17,7 +17,7 @@ brew install light4/pinentry-touchid/pinentry-touchid
 pinentry-touchid --check
 ```
 
-Formula 从经过 SHA-256 校验的 0.1.0 不可变源码快照构建。
+Formula 从经过 SHA-256 校验的 `v0.1.0` release 源码压缩包构建。
 要求 macOS 13+ 和 Swift 6+：macOS 15+ 使用 Xcode / Command Line Tools 的 Swift；
 更早的 macOS 则依赖 Homebrew 的 Swift。
 所选工具链及构建依赖也必须支持当前 macOS 版本。暂不提供预构建 bottle。

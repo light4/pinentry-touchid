@@ -42,9 +42,9 @@ nixfmt --check flake.nix nix/package.nix
 brew style Formula/pinentry-touchid.rb
 ```
 
-`Formula/pinentry-touchid.rb` 锁定不可变源码压缩包及校验值，
-`head` 跟踪 `main`。发布源码变更时，需一起更新压缩包 revision、版本和校验值。
-当前快照使用 commit `27abc8fc6817a2549f008eec0d3cfd351e9c6355`，不依赖 release tag。
+`Formula/pinentry-touchid.rb` 锁定 `v0.1.0` release 压缩包及校验值，
+`head` 跟踪 `main`。发布源码变更时，先发布新的不可变 tag，
+再更新 Formula 的压缩包 URL 和校验值；Homebrew 会从 URL 推断版本。
 
 按[安装指南](usage.zh-CN.md#homebrew)安装 Formula 后，运行其 CLI / 协议冒烟测试：
 

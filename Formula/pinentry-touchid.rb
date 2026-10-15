@@ -1,9 +1,8 @@
 class PinentryTouchid < Formula
   desc "Native macOS GnuPG pinentry with Touch ID"
   homepage "https://github.com/light4/pinentry-touchid"
-  url "https://github.com/light4/pinentry-touchid/archive/27abc8fc6817a2549f008eec0d3cfd351e9c6355.tar.gz"
-  version "0.1.0"
-  sha256 "f40b22ad8f5cb7bd001ee62e791282c436dbf5e1180f02f8899d026d6d3008ba"
+  url "https://github.com/light4/pinentry-touchid/archive/refs/tags/v0.1.0.tar.gz"
+  sha256 "d76ceb7a3dbc9b421795d443b90c3e6a321c8bf88c3fabb7a136638868143830"
   head "https://github.com/light4/pinentry-touchid.git", branch: "main"
 
   depends_on macos: :ventura

@@ -43,10 +43,10 @@ nixfmt --check flake.nix nix/package.nix
 brew style Formula/pinentry-touchid.rb
 ```
 
-`Formula/pinentry-touchid.rb` pins an immutable source archive and checksum;
-its `head` tracks `main`. When releasing source changes, update the archive
-revision, version, and checksum together. The snapshot currently uses commit
-`27abc8fc6817a2549f008eec0d3cfd351e9c6355`; it does not depend on a release tag.
+`Formula/pinentry-touchid.rb` pins the `v0.1.0` release archive and its checksum;
+its `head` tracks `main`. When releasing source changes, publish a new immutable
+tag, then update the formula's archive URL and checksum. Homebrew infers the
+version from the archive URL.
 
 After [installing the formula](usage.md#homebrew), run its CLI/protocol smoke test:
 
