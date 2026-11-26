@@ -6,9 +6,12 @@
 """Black-box E2E checks against the real pinentry-touchid executable."""
 
 import argparse
+import os
 import re
+import secrets
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -252,6 +255,122 @@ def gui(binary: str) -> None:
     )
 
 
+def pasteboard(value: str | None = None) -> str:
+    env = {**os.environ, "LANG": "en_US.UTF-8"}
+    argv = ["pbpaste"] if value is None else ["pbcopy"]
+    result = subprocess.run(
+        argv,
+        input=value,
+        capture_output=True,
+        check=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+        timeout=5,
+    )
+    return result.stdout
+
+
+def system_events(script: str) -> str:
+    try:
+        result = subprocess.run(
+            [
+                "osascript",
+                "-e",
+                f'tell application "System Events"\n{script}\nend tell',
+            ],
+            capture_output=True,
+            check=True,
+            text=True,
+            timeout=10,
+        )
+    except subprocess.CalledProcessError as error:
+        raise AssertionError(f"System Events failed: {error.stderr.strip()}") from error
+    return result.stdout.strip()
+
+
+# Accessibility does not expose this CLI process's windows, so ask CoreGraphics.
+WINDOWS_JXA = """
+ObjC.import("CoreGraphics");
+function run(argv) {
+  const windows = ObjC.deepUnwrap(ObjC.castRefToObject(
+    $.CGWindowListCopyWindowInfo($.kCGWindowListOptionOnScreenOnly, 0)));
+  return windows.filter((w) => w.kCGWindowOwnerPID === Number(argv[0])).length;
+}
+"""
+
+
+def onscreen_windows(pid: int) -> int:
+    result = subprocess.run(
+        ["osascript", "-l", "JavaScript", "-e", WINDOWS_JXA, str(pid)],
+        capture_output=True,
+        check=True,
+        text=True,
+        timeout=10,
+    )
+    return int(result.stdout)
+
+
+def paste(binary: str) -> None:
+    # Cmd+V must reach the focused secure field and insert at the cursor.
+    # Synthetic keystrokes require Accessibility permission.
+    expect(
+        system_events("UI elements enabled") == "true",
+        "Grant Accessibility to this terminal in System Settings > Privacy & Security",
+    )
+    secret = "e2e-paste-" + secrets.token_hex(8)
+    original = pasteboard()
+    pasteboard(secret)
+    process = subprocess.Popen(
+        [binary],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+        cwd=ROOT,
+    )
+    try:
+        assert process.stdin is not None
+        # No SETKEYINFO: never query or save Keychain entries.
+        process.stdin.write(
+            "SETTIMEOUT 15\n"
+            "SETTITLE pinentry-touchid E2E — do not interact\n"
+            "SETREPEAT Repeat passphrase\n"
+            "GETPIN\n"
+            "BYE\n"
+        )
+        process.stdin.flush()  # communicate() closes stdin later.
+        deadline = time.monotonic() + 10
+        while onscreen_windows(process.pid) == 0:
+            expect(time.monotonic() < deadline, "Passphrase dialog did not appear")
+            time.sleep(0.2)
+        time.sleep(0.5)  # Let the dialog become key before typing.
+        # The app activates itself. Type a prefix and paste in the passphrase field,
+        # Tab to the repeat field and do the same, then submit.
+        type_and_paste = 'keystroke "a"\nkeystroke "v" using command down\n'
+        system_events(type_and_paste + "key code 48\n" + type_and_paste + "key code 36")
+        stdout, stderr = process.communicate(timeout=20)
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+        pasteboard(original)
+    expected = [
+        GREETING,
+        "OK",
+        "OK",
+        "OK",
+        "S PIN_REPEATED",
+        f"D a{secret}",
+        "OK",
+        CLOSING,
+    ]
+    actual = stdout.splitlines()
+    expect(actual == expected, f"Paste mismatch:\n{actual!r}\nexpected:\n{expected!r}")
+    expect(not stderr, f"Unexpected paste stderr: {stderr!r}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -263,6 +382,11 @@ def main() -> int:
         "--gui",
         action="store_true",
         help="also open real dialogs to verify timeouts (requires a local macOS graphical session)",
+    )
+    parser.add_argument(
+        "--paste",
+        action="store_true",
+        help="also drive a real dialog with Cmd+V via System Events (requires Accessibility permission; temporarily replaces the clipboard)",
     )
     args = parser.parse_args()
     if sys.platform != "darwin":
@@ -288,6 +412,11 @@ def main() -> int:
             print("PASS native dialog timeouts", flush=True)
         else:
             print("SKIP native dialog timeouts (enable with --gui)", flush=True)
+        if args.paste:
+            paste(binary)
+            print("PASS Cmd+V paste into secure fields", flush=True)
+        else:
+            print("SKIP Cmd+V paste (enable with --paste)", flush=True)
     except (AssertionError, OSError, subprocess.SubprocessError) as error:
         print(f"FAIL: {error}", file=sys.stderr)
         return 1

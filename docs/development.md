@@ -94,7 +94,22 @@ and waits for their automatic timeouts. Do not interact with the dialogs.
 It verifies timeout errors, recovery, and timeout persistence across RESET.
 These checks are not run by the commit hook.
 
-Neither mode supplies real passphrases, retrieves or modifies Keychain entries,
+### Optional paste check
+
+```sh
+uv run scripts/e2e.py --paste
+```
+
+This opens a real repeat-entry passphrase dialog and drives it through System
+Events: it types a character and presses Cmd+V in each field, then submits and
+checks the returned passphrase. It verifies that the paste reaches the focused
+field and inserts at the cursor. The terminal needs Accessibility permission
+(System Settings > Privacy & Security > Accessibility). The clipboard is replaced
+with a random test value and its plain-text content is restored afterward;
+non-text clipboard content is lost. Do not use the keyboard or mouse while it runs.
+This check is not run by the commit hook.
+
+None of these modes supplies real passphrases, retrieves or modifies Keychain entries,
 or changes GPG configuration. The Touch ID availability check does not authenticate.
 
 ### Manual checks
