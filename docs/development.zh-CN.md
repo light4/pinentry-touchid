@@ -42,7 +42,7 @@ nixfmt --check flake.nix nix/package.nix
 brew style Formula/pinentry-touchid.rb
 ```
 
-`Formula/pinentry-touchid.rb` 锁定 `v0.1.0` release 压缩包及校验值，
+`Formula/pinentry-touchid.rb` 锁定 `v0.1.1` release 压缩包及校验值，
 `head` 跟踪 `main`。发布源码变更时，先发布新的不可变 tag，
 再更新 Formula 的压缩包 URL 和校验值；Homebrew 会从 URL 推断版本。
 

@@ -18,7 +18,7 @@ brew install light4/pinentry-touchid/pinentry-touchid
 pinentry-touchid --check
 ```
 
-The formula builds from the SHA-256-verified `v0.1.0` release source archive. It requires macOS 13+ and Swift 6+: on macOS 15+ it uses the Swift toolchain
+The formula builds from the SHA-256-verified `v0.1.1` release source archive. It requires macOS 13+ and Swift 6+: on macOS 15+ it uses the Swift toolchain
 from Xcode / Command Line Tools; on older macOS it depends on Homebrew's Swift.
 The selected toolchain and any build dependencies must support your macOS version.
 There are no prebuilt bottles.

@@ -1,8 +1,8 @@
 class PinentryTouchid < Formula
   desc "Native macOS GnuPG pinentry with Touch ID"
   homepage "https://github.com/light4/pinentry-touchid"
-  url "https://github.com/light4/pinentry-touchid/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "d76ceb7a3dbc9b421795d443b90c3e6a321c8bf88c3fabb7a136638868143830"
+  url "https://github.com/light4/pinentry-touchid/archive/refs/tags/v0.1.1.tar.gz"
+  sha256 "b657e6e36e58de00969562618127cf87b978295d7cc86a8ffd747cd1be8beb12"
   head "https://github.com/light4/pinentry-touchid.git", branch: "main"
 
   depends_on macos: :ventura
@@ -26,7 +26,7 @@ class PinentryTouchid < Formula
   end
 
   test do
-    assert_match "pinentry-touchid (Swift) 0.1.0", shell_output("#{bin}/pinentry-touchid --version")
+    assert_match "pinentry-touchid (Swift) 0.1.1", shell_output("#{bin}/pinentry-touchid --version")
     assert_equal "OK pinentry-touchid Swift ready\nD swift-touchid\nOK\nOK closing connection\n",
                  pipe_output(bin/"pinentry-touchid", "GETINFO flavor\nBYE\n", 0)
   end
