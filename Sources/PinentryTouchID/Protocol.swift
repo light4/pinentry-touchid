@@ -149,7 +149,7 @@ final class Server {
     case "NOP": break
     case "GETINFO":
       switch argument {
-      case "version": Assuan.data(Data("0.1.0".utf8))
+      case "version": Assuan.data(Data("0.1.1".utf8))
       case "pid": Assuan.data(Data(String(ProcessInfo.processInfo.processIdentifier).utf8))
       case "flavor": Assuan.data(Data("swift-touchid".utf8))
       default: throw PinentryError(55, "Unknown information request")

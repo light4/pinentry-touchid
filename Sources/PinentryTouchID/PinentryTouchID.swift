@@ -22,7 +22,7 @@ struct PinentryTouchID {
       return
     }
     if arguments == ["--version"] {
-      print("pinentry-touchid (Swift) 0.1.0")
+      print("pinentry-touchid (Swift) 0.1.1")
       return
     }
     if arguments == ["--check"] {
